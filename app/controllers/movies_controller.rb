@@ -11,6 +11,7 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings = Movie.all_ratings
 
     if params[:title_sort] == "on"
       
@@ -25,6 +26,11 @@ class MoviesController < ApplicationController
       
       @movies = Movie.all
       
+    end
+    @current_ratings = params[:ratings] || session[:ratings] || {} #setup current ratings for the session
+    
+    if @current_ratings == {}
+      @current_ratings = Hash[@all_ratings.map{|rating| [rating,rating]}]
     end
     
   end
