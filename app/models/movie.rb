@@ -1,5 +1,15 @@
 class Movie < ActiveRecord::Base
-    def self.all_ratings
-        return ['G','PG','PG-13','R','NC-17']
-    end
+
+  # attr_accessor :title
+  # attr_accessor :rating
+  # attr_accessor :description
+  # attr_accessor :release_date
+
+
+  def self.get_possible_ratings
+    
+	  return %w[G PG PG-13 R]
+	  
+  end
+	  
 end

@@ -1,7 +1,7 @@
 class MoviesController < ApplicationController
 
   def movie_params
-    @movies = Movie.all = Movie.order(params[:sort_param])
+    params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
 
   def show
@@ -11,28 +11,60 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.all_ratings
+    
+    @all_ratings = Movie.get_possible_ratings
 
-    if params[:title_sort] == "on"
+    unless params[:ratings].nil?
+    
+      @rating_filter = params[:ratings]
+      session[:rating_filter] = @rating_filter
       
-      @movies = Movie.order("title asc")
+    end
+
+   
+    if params[:working_sort].nil?
+  
+    else
+      session[:working_sort] = params[:working_sort]
+    end
+
+    if params[:working_sort].nil? && params[:ratings].nil? && session[:rating_filter]
+      
+      @rating_filter = session[:rating_filter]
+      @working_sort = session[:working_sort]
+    
+      flash.keep
+      redirect_to movies_path({order_by: @working_sort, ratings: @rating_filter})
+      
+    end
+    
+    @movies = Movie.all
+
+    if session[:rating_filter]
+      
+      @movies = @movies.select{ |movie| session[:rating_filter].include? movie.rating }
+      
+    end
+
+    
+    if session[:working_sort] == "title"
+    
+
+      @movies = @movies.sort! { |a, b| a.title <=> b.title }
+
       @movie_highlight = "hilite"
       
-    elsif params[:date_sort] == "on"
-    
-      @movies = Movie.order("release_date asc")
+    elsif session[:working_sort] == "release_date"
+      
+
+      @movies = @movies.sort! { |a, b| a.release_date <=> b.release_date }
+
       @date_highlight = "hilite"
+      
     else
       
-      @movies = Movie.all
-      
     end
-    @current_ratings = params[:ratings] || session[:ratings] || {} #setup current ratings for the session
-    
-    if @current_ratings == {}
-      @current_ratings = Hash[@all_ratings.map{|rating| [rating,rating]}]
-    end
-    
+	
   end
 
   def new
